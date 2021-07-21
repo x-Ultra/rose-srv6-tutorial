@@ -1,0 +1,3 @@
+#! /bin/bash
+
+rm dinamically_captured.txt IPv6-Responder twamp_results.txt

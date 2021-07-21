@@ -18,6 +18,7 @@ from mininet.net import Mininet
 # from mininet.topo import Topo
 from mininet.node import Host, OVSBridge
 from mininet.util import dumpNodeConnections
+from time import sleep
 
 # BASEDIR = "/home/user/mytests/ospf3routers/nodeconf/"
 BASEDIR = os.getcwd() + "/nodeconf/"
@@ -45,6 +46,14 @@ if NODE_MANAGER_PATH is not None:
                                      'srv6_manager.py')
 # Get gRPC server port
 NODE_MANAGER_GRPC_PORT = os.getenv('NODE_MANAGER_GRPC_PORT', None)
+
+# Castagnacci-Ditella Progetto
+
+# GLobal Variables
+choosed_sender = ''
+choosed_responder = ''
+
+# -----------------------------
 
 
 class BaseNode(Host):
@@ -316,6 +325,7 @@ def extract_host_pid(dumpline):
 
 
 def simple_test():
+    global choosed_sender, choosed_responder
     "Create and test a simple network"
 
     # topo = RoutersTopo()
@@ -338,6 +348,28 @@ def simple_test():
     # Add Mininet nodes to /etc/hosts
     if ADD_ETC_HOSTS:
         add_nodes_to_etc_hosts()
+
+    # Castagnacci-Ditella Progetto
+
+    # Step 1. Recuperare sender & Responder scelti dell'utente
+    sender = net.get(choosed_sender)
+    responder = net.get(choosed_responder)
+
+    # Step 2. Execute on responder, twampy cmd
+    print("RESPONDER", responder.name, "IN ASCOLTO")
+    responder.cmd("./responder &")
+    print("RESPONDER FINITO")
+    sleep(40)
+
+    # Step 3. Execute on sender sniff cmd
+    sender.cmd("./twamp_sniff &")
+    print("SENDER", sender.name, "STA SNIFFANDO")
+    
+    # Step 4. Execute on sender twampy cmd
+    sender.cmd("./sender > twamp_results.txt")
+    print("SENDER STA CATTURANDO")
+
+    # -----------------------------
 
     CLI(net)
 
@@ -375,6 +407,32 @@ def __main():
     global ADD_ETC_HOSTS  # pylint: disable=global-statement
     global START_NODE_MANAGERS  # pylint: disable=global-statement
     global NODE_MANAGER_GRPC_PORT  # pylint: disable=global-statement
+    global net
+    global choosed_sender, choosed_responder
+
+    # Castagnacci-Ditella Progetto
+    possible_routers = ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8"]
+    sender_choosed = False
+    responder_chosed = False
+    while not sender_choosed or not responder_chosed:
+        print("Here are the routers in the current mininet topology:")
+        print("r1\nr2\nr3\nr4\nr5\nr6\nr7\nr8")
+        print("Please choose a Sender and Receiver to be used for Delay Measurement (TWAMP)")
+        if not sender_choosed:
+            choosed_sender = input("Choose the Router 'Sender': ")
+            if choosed_sender in possible_routers:
+                sender_choosed = True
+        if not responder_chosed:
+            choosed_responder = input("Choose the Router 'Responder': ")
+            if choosed_responder in possible_routers:
+                responder_chosed = True
+        os.system("clear")
+        if not sender_choosed:
+            print("!! Wrong choice for sender !!")
+        if not responder_chosed:
+            print("!! Wrong choice for responder !!")
+    # -----------------------------
+
     # Parse command-line arguments
     args = parse_arguments()
     # Define whether to start node manager on routers or not
@@ -401,6 +459,7 @@ def __main():
     # Tell mininet to print useful information
     setLogLevel('info')
     simple_test()
+
 
 
 if __name__ == '__main__':

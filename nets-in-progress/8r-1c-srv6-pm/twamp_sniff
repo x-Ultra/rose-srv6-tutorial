@@ -1,0 +1,3 @@
+#! /bin/bash
+
+tcpdump -c 6 -x -i any -n ip6 host $(cat IPv6-Responder) and udp port 20000 > dinamically_captured.txt

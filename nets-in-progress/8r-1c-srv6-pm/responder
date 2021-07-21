@@ -1,0 +1,5 @@
+#! /bin/bash
+
+ip a | grep lo: -A 5 | grep global | cut -d " " -f 6 | cut -d "/" -f 1 > IPv6-Responder
+python ./twampy/twampy.py responder $(cat IPv6-Responder)
+echo "POST REPONDER" > post_responder
