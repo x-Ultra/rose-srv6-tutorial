@@ -1,3 +1,3 @@
 #! /bin/bash
 
-rm dinamically_captured.txt IPv6-Responder twamp_results.txt
+rm IPv6-Reflector IPv6-Sender sender_results.txt received_twamp_packets.txt 

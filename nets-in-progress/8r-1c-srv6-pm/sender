@@ -1,5 +1,10 @@
 #! /bin/bash
 
-python ./twampy/twampy.py sender $(cat IPv6-Responder)
+## saving IPV6 address into a file
+ip a | grep lo: -A 5 | grep global | cut -d " " -f 6 | cut -d "/" -f 1 > IPv6-Sender
 
-echo "post_sender" > post_sender
+# executing nokia's twampy implementation 
+#python ./twampy/twampy.py sender $(cat IPv6-Responder)
+
+# executing scapy custom implementation
+python3 ./twamp_test_sender.py

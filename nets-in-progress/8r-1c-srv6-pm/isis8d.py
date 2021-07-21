@@ -51,7 +51,7 @@ NODE_MANAGER_GRPC_PORT = os.getenv('NODE_MANAGER_GRPC_PORT', None)
 
 # GLobal Variables
 choosed_sender = ''
-choosed_responder = ''
+choosed_reflector = ''
 
 # -----------------------------
 
@@ -325,7 +325,7 @@ def extract_host_pid(dumpline):
 
 
 def simple_test():
-    global choosed_sender, choosed_responder
+    global choosed_sender, choosed_reflector
     "Create and test a simple network"
 
     # topo = RoutersTopo()
@@ -351,23 +351,23 @@ def simple_test():
 
     # Castagnacci-Ditella Progetto
 
-    # Step 1. Recuperare sender & Responder scelti dell'utente
+    # Step 1. Recuperare sender & Reflector scelti dell'utente
     sender = net.get(choosed_sender)
-    responder = net.get(choosed_responder)
+    reflector = net.get(choosed_reflector)
 
-    # Step 2. Execute on responder, twampy cmd
-    print("RESPONDER", responder.name, "IN ASCOLTO")
-    responder.cmd("./responder &")
-    print("RESPONDER FINITO")
+    # waiting sender to setup (after several test, we noticed that removing the sleep
+    #                           will cause this command to fail)
+    print("Waiting the routers to set up... (40 sec)")
     sleep(40)
 
-    # Step 3. Execute on sender sniff cmd
-    sender.cmd("./twamp_sniff &")
-    print("SENDER", sender.name, "STA SNIFFANDO")
-    
+    # Step 2. Execute on reflector, twampy cmd
+    print("REFLECTOR", reflector.name, "Is sniffing")
+    reflector.cmd("./reflector > received_twamp_packets.txt  &")
+
+
+    print("SENDER", sender.name, "Is sending (scapy crafted) TWAMP packets")
     # Step 4. Execute on sender twampy cmd
-    sender.cmd("./sender > twamp_results.txt")
-    print("SENDER STA CATTURANDO")
+    sender.cmd("./sender > sender_results.txt &")
 
     # -----------------------------
 
@@ -408,13 +408,13 @@ def __main():
     global START_NODE_MANAGERS  # pylint: disable=global-statement
     global NODE_MANAGER_GRPC_PORT  # pylint: disable=global-statement
     global net
-    global choosed_sender, choosed_responder
+    global choosed_sender, choosed_reflector
 
     # Castagnacci-Ditella Progetto
     possible_routers = ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8"]
     sender_choosed = False
-    responder_chosed = False
-    while not sender_choosed or not responder_chosed:
+    reflector_chosed = False
+    while not sender_choosed or not reflector_chosed:
         print("Here are the routers in the current mininet topology:")
         print("r1\nr2\nr3\nr4\nr5\nr6\nr7\nr8")
         print("Please choose a Sender and Receiver to be used for Delay Measurement (TWAMP)")
@@ -422,15 +422,15 @@ def __main():
             choosed_sender = input("Choose the Router 'Sender': ")
             if choosed_sender in possible_routers:
                 sender_choosed = True
-        if not responder_chosed:
-            choosed_responder = input("Choose the Router 'Responder': ")
-            if choosed_responder in possible_routers:
-                responder_chosed = True
+        if not reflector_chosed:
+            choosed_reflector = input("Choose the Router 'Reflector': ")
+            if choosed_reflector in possible_routers:
+                reflector_chosed = True
         os.system("clear")
         if not sender_choosed:
             print("!! Wrong choice for sender !!")
-        if not responder_chosed:
-            print("!! Wrong choice for responder !!")
+        if not reflector_chosed:
+            print("!! Wrong choice for reflector !!")
     # -----------------------------
 
     # Parse command-line arguments

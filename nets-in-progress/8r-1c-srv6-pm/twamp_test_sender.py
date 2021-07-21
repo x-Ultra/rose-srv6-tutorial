@@ -6,12 +6,15 @@ from scapy.layers.inet6 import IPv6,IPv6ExtHdrSegmentRouting
 import twamp
 import time
 
-source_addr = "fe80::3b34:65ba:2422:139f"
-dst_addr = "fe80::66d0:97f9:7087:dd22"
+sender_file = open("IPv6-Sender", "r")
+reflector_file = open("IPv6-Reflector", "r")
+
+source_addr = sender_file.readline().split('\n')[0]
+dst_addr = reflector_file.readline().split('\n')[0]
 
 i=IPv6() 
-i.src=source_addr
-i.dst= dst_addr
+i.src = source_addr
+i.dst = dst_addr
 
 q=UDP()
 q.dport = 1205 #TODO  me li da il controller?
