@@ -3,130 +3,152 @@ from scapy.layers.inet import IP,UDP
 from scapy.layers.inet6 import IPv6
 import twamp
 from datetime import datetime
+from threading import Thread
 
 
 
-class Sender():
+class TWAMPDelayMeasurement(Thread):
 
-	 def __init__(self,srcAddr,dstAddr):
+    def __init__(self, interface=get_if_list(), sender=None, reflector=None):
 
-	 	self.SequenceNumber = 0
-	 	self.srcAddr = srcAddr
-	 	self.dstAddr = dstAddr
+        Thread.__init__(self)
+        self.interface = interface
+        self.SessionSender = sender
+        self.SessionReflector = reflector
 
-	 def sendDelayPacket(self,scale=0,multiplier=0):
+    def packetRecvCallback(self, packet):
 
-	 	timestamp = self.getTimestamp()
+        #TODO passate dal controller per connessione!!!
+        if UDP in packet:
+            if packet[UDP].dport==1205:
+                packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
+                print(packet.show())
+                if(self.SessionReflector != None):
+                    self.SessionReflector.recvTWAMPfromSender(packet)
 
-	 	twampPaylod = twamp.TWAMPTPacketSender(
-	 											SequenceNumber = self.SequenceNumber, 
-	 											FirstPartTimestamp = self.intToBitField(32,timestamp[0]),
-	 											SecondPartTimestamp = self.intToBitField(32,timestamp[1]),
-	 											Scale = self.intToBitField(6,scale),
-	 											Multiplier = self.intToBitField(8,multiplier)
-	 										)
+            elif packet[UDP].dport==1206:
+                packet[UDP].decode_payload_as(twamp.TWAMPTPacketReflector)
+                print(packet.show())
+                if(self.SessionSender != None):
+                    self.SessionSender.recvTWAMPfromReflector(packet)
 
-	 	ipv6_packet = IPv6()
-        ipv6_packet.src = self.srcAddr 
-        ipv6_packet.dst = self.dstAddr
+            else:
+                print(packet.show())
 
-        #TODO parte Srv6 qui
+    def run(self):
 
-   		udp_packet = UDP()
-        udp_packet.dport = 1205 
-        udp_packet.sport = 1206 
-
-        pkt = ipv6_packet / udp_packet / twampPaylod
-
-        return pkt
-
-
-     def getTimestamp(self):
-
-     	t = datetime.timestamp(datetime.now())
-
-     	intTimestamp = int(t)
-     	floatTimestamp = int(str(t).split(".")[1])
-
-     	return (intTimestamp,floatTimestamp)
+        print("TestPacketReceiver Start sniffing...")
+        sniff(iface=self.interface, filter="ip6", prn=self.packetRecvCallback)
+        print("TestPacketReceiver Stop sniffing")
 
 
-     def intToBitField(self,size,val):
+class TWAMPUtils():
 
-     	bitArray = [int(digit) for digit in bin(val)[2:]]
+    def __init__(self):
+        print("Util class")
 
-     	if ( len(bitArray) > size):
-     			return [0]
+    def getTimestamp(self):
 
-     	for i in range(0,size-len(bitArray)):
-     		bitArray.insert(0,0)
+        t = datetime.timestamp(datetime.now())
 
-     	return bitArray
+        intTimestamp = int(t)
+        floatTimestamp = int(str(t).split(".")[1])
 
-
-
-
-class Reflector():
-	
-	def __init__(self,srcAddr,dstAddr):
-
-	 	self.SequenceNumber = 0
-	 	self.srcAddr = srcAddr
-	 	self.dstAddr = dstAddr
-	 	self.senderSequenceNumber = 0
-	 	self.senderTSint = 0
-	 	self.senderTSfloat = 0
+        return (intTimestamp,floatTimestamp)
 
 
-	def receiveDelayPacket(self,scale=0,multiplier=0,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=0) :
+    def intToBitField(self,size,val):
+
+        bitArray = [int(digit) for digit in bin(val)[2:]]
+
+        if ( len(bitArray) > size):
+                return [0]
+
+        for i in range(0,size-len(bitArray)):
+            bitArray.insert(0,0)
+
+        return bitArray
 
 
+
+class Reflector(TWAMPUtils):
+        
+        def __init__(self,srcAddr,dstAddr):
+
+                self.SequenceNumber = 0
+                self.srcAddr = srcAddr
+                self.dstAddr = dstAddr
+                self.senderSequenceNumber = 0
+                self.senderTSint = 0
+                self.senderTSfloat = 0
+
+
+        def receiveDelayPacket(self,scale=0,multiplier=0,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=0):
+
+
+            ipv6_packet = IPv6()
+            ipv6_packet.src = self.srcAddr
+            ipv6_packet.dst = self.dstAddr
+
+            udp_packet = UDP()
+            udp_packet.dport = 1206 
+            udp_packet.sport = 1205 
+
+            twamp_reflector = twamp.TWAMPTPacketReflector(SequenceNumber = self.SequenceNumber, 
+                                                        FirstPartTimestamp = self.intToBitField(32,timestamp[0]),
+                                                        SecondPartTimestamp = self.intToBitField(32,timestamp[1]),
+                                                        Scale = self.intToBitField(6,scale),
+                                                        Multiplier = self.intToBitField(8,multiplier),
+                                                        MBZ = self.intToBitField(16,mBZ),
+                                                        FirstPartTimestampReceiver = self.intToBitField(32,timestamp[0]),
+                                                        SecondPartTimestampReceiver = self.intToBitField(32,timestamp[1]),
+                                                        SequenceNumberSender = self.senderSequenceNumber,
+                                                        FirstPartTimestampSender = self.intToBitField(32,self.senderTSint),
+                                                        SecondPartTimestampSender = self.intToBitField(32,self.senderTSfloat),
+                                                        ScaleSender = self.intToBitField(6,scaleSender),
+                                                        MultiplierSender = self.intToBitField(8,multiplierSender)
+                                                        )
+            pkt = ipv6_packet / udp_packet / twamp_reflector
+
+            send(pkt, count=1)
+
+
+        def recvTWAMPfromSender(self, packet):
+
+            print("TODO")
+
+
+class Sender(TWAMPUtils):
+
+    def __init__(self, srcAddr, dstAddr):
+        self.srcAddr = srcAddr
+        self.dstAddr = dstAddr
+        self.SequenceNumber = 0
+
+    def sendDelayPacket(self,scale=0,multiplier=0):
+
+        timestamp = self.getTimestamp()
         ipv6_packet = IPv6()
         ipv6_packet.src = self.srcAddr
         ipv6_packet.dst = self.dstAddr
 
+        #TODO parte Srv6 qui
+
         udp_packet = UDP()
-        udp_packet.dport = 1206 
-        udp_packet.sport = 1205 
+        udp_packet.dport = 1205 
+        udp_packet.sport = 1206 
 
-        twamp_reflector = twamp.TWAMPTPacketReflector(SequenceNumber = self.SequenceNumber, 
-        											  FirstPartTimestamp = self.intToBitField(32,timestamp[0]),
-	 												  SecondPartTimestamp = self.intToBitField(32,timestamp[1]),
-	 												  Scale = self.intToBitField(6,scale),
-	 												  Multiplier = self.intToBitField(8,multiplier),
-	 												  MBZ = self.intToBitField(16,mBZ),
-        											  FirstPartTimestampReceiver = self.intToBitField(32,timestamp[0]),
-        											  SecondPartTimestampReceiver = self.intToBitField(32,timestamp[1]),
-        											  SequenceNumberSender = self.senderSequenceNumber,
-        											  FirstPartTimestampSender = self.intToBitField(32,self.senderTSint),
-        											  SecondPartTimestampSender = self.intToBitField(32,self.senderTSfloat),
-        											  ScaleSender = self.intToBitField(6,scaleSender),
-        											  MultiplierSender = self.intToBitField(8,multiplierSender),
-        											  MBZ = self.intToBitField(16,mBZ)
-        											  )	
+        twampPaylod = twamp.TWAMPTPacketSender(SequenceNumber = self.SequenceNumber, 
+                                FirstPartTimestamp = self.intToBitField(32,timestamp[0]),
+                                SecondPartTimestamp = self.intToBitField(32,timestamp[1]),
+                                Scale = self.intToBitField(6,scale), 
+                                Multiplier = self.intToBitField(8,multiplier))
 
-        pkt = ipv6_packet / udp_packet / twamp_reflector
+        pkt = ipv6_packet / udp_packet / twampPaylod
+
+        send(pkt, count=1)
 
 
+    def recvTWAMPfromReflector(self, packet):
 
-     def getTimestamp(self):
-
-     	t = datetime.timestamp(datetime.now())
-
-     	intTimestamp = int(t)
-     	floatTimestamp = int(str(t).split(".")[1])
-
-     	return (intTimestamp,floatTimestamp)
-
-
-     def intToBitField(self,size,val):
-
-     	bitArray = [int(digit) for digit in bin(val)[2:]]
-
-     	if ( len(bitArray) > size):
-     			return [0]
-
-     	for i in range(0,size-len(bitArray)):
-     		bitArray.insert(0,0)
-
-     	return bitArray
+        print("TODO")

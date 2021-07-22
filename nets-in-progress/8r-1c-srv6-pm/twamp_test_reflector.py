@@ -2,10 +2,12 @@
 
 from scapy.all import *
 from scapy.layers.inet import IP,UDP
-from scapy.layers.inet6 import IPv6,IPv6ExtHdrSegmentRouting
+from scapy.layers.inet6 import IPv6
 
 import twamp
 
+
+"""
 #sniffing on ALL interfaces
 all_interfaces = get_if_list()
 
@@ -22,4 +24,6 @@ def rcv(packet):
 # WARNING ! ! ! Scapy 2.4.5 has a BUG, and passing a list will raise an exeption
 # 				The bug -> (https://github.com/secdev/scapy/issues/3191)
 sniff(iface=all_interfaces, filter="ip6", prn=lambda x: rcv(x))
+"""
+
 
