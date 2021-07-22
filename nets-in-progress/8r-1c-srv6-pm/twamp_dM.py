@@ -94,18 +94,18 @@ class Reflector(TWAMPUtils):
             udp_packet.sport = 1205 
 
             twamp_reflector = twamp.TWAMPTPacketReflector(SequenceNumber = self.SequenceNumber, 
-                                                        FirstPartTimestamp = self.intToBitField(32,timestamp[0]),
-                                                        SecondPartTimestamp = self.intToBitField(32,timestamp[1]),
-                                                        Scale = self.intToBitField(6,scale),
-                                                        Multiplier = self.intToBitField(8,multiplier),
-                                                        MBZ = self.intToBitField(16,mBZ),
-                                                        FirstPartTimestampReceiver = self.intToBitField(32,timestamp[0]),
-                                                        SecondPartTimestampReceiver = self.intToBitField(32,timestamp[1]),
+                                                        FirstPartTimestamp = timestamp[0],
+                                                        SecondPartTimestamp = timestamp[1],
+                                                        Scale = scale,
+                                                        Multiplier = multiplier,
+                                                        MBZ = mBZ,
+                                                        FirstPartTimestampReceiver = timestamp[0],
+                                                        SecondPartTimestampReceiver = timestamp[1],
                                                         SequenceNumberSender = self.senderSequenceNumber,
-                                                        FirstPartTimestampSender = self.intToBitField(32,self.senderTSint),
-                                                        SecondPartTimestampSender = self.intToBitField(32,self.senderTSfloat),
-                                                        ScaleSender = self.intToBitField(6,scaleSender),
-                                                        MultiplierSender = self.intToBitField(8,multiplierSender)
+                                                        FirstPartTimestampSender = self.senderTSint,
+                                                        SecondPartTimestampSender = self.senderTSfloat,
+                                                        ScaleSender = scaleSender,
+                                                        MultiplierSender = multiplierSender
                                                         )
             pkt = (ipv6_packet / udp_packet / twamp_reflector)
 
@@ -137,17 +137,10 @@ class Sender(TWAMPUtils):
         udp_packet.sport = 1206 
 
         twampPaylod = twamp.TWAMPTPacketSender(SequenceNumber = self.SequenceNumber, 
-<<<<<<< HEAD
                                 FirstPartTimestamp = timestamp[0],
                                 SecondPartTimestamp = timestamp[1],
                                 Scale = self.intToBitField(6,scale), 
                                 Multiplier = self.intToBitField(8,multiplier))
-=======
-                                FirstPartTimestamp = self.timestamp[0],
-                                SecondPartTimestamp = self.timestamp[1],
-                                Scale = self.scale, 
-                                Multiplier = self.multiplier)
->>>>>>> 54ec95aa5a34b7a6c2b2de07b3e9138d91c4b05d
 
         pkt = (ipv6_packet / udp_packet / twampPaylod)
 
