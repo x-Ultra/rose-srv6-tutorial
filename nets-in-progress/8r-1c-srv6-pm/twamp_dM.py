@@ -55,19 +55,6 @@ class TWAMPUtils():
         return (intTimestamp,floatTimestamp)
 
 
-    def intToBitField(self,size,val):
-
-        bitArray = [int(digit) for digit in bin(val)[2:]]
-
-        if ( len(bitArray) > size):
-                return [0]
-
-        for i in range(0,size-len(bitArray)):
-            bitArray.insert(0,0)
-
-        return bitArray
-
-
 
 class Reflector(TWAMPUtils):
         
@@ -140,8 +127,8 @@ class Sender(TWAMPUtils):
         twampPaylod = twamp.TWAMPTPacketSender(SequenceNumber = self.SequenceNumber, 
                                 FirstPartTimestamp = timestamp[0],
                                 SecondPartTimestamp = timestamp[1],
-                                Scale = self.intToBitField(6,scale), 
-                                Multiplier = self.intToBitField(8,multiplier))
+                                Scale = scale, 
+                                Multiplier = multiplier)
 
         pkt = (ipv6_packet / udp_packet / twampPaylod)
 
