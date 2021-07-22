@@ -42,8 +42,8 @@ class TWAMPTestResponse(Packet):
                     ByteEnumField("ReceverControlCode", 0, {1: "Error - Invalid Message"}),
                     XByteField("SenderTTL",0)] #manca il padding
 
-class TWAMPTSessionSender(Packet):
-    name ="TWAMPSender"
+class TWAMPTPacketSender(Packet):
+    name ="TWAMPPacketSender"
     fields_desc=[IntField("SequenceNumber",0),
                     BitField("FirstPartTimestamp",0,32),
                     BitField("SecondPartTimestamp",0,32),
@@ -54,8 +54,8 @@ class TWAMPTSessionSender(Packet):
                     BitField("Multiplier",0,8)] #manca il padding
 
 
-class TWAMPTSessionReflector(Packet):
-    name ="TWAMPReflector"
+class TWAMPTPacketReflector(Packet):
+    name ="TWAMPPacketReflector"
     fields_desc=[IntField("SequenceNumber",0),
                     BitField("FirstPartTimestamp",0,32),
                     BitField("SecondPartTimestamp",0,32),
