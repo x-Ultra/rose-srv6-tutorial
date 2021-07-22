@@ -4,6 +4,7 @@ from scapy.layers.inet6 import IPv6
 import twamp
 from datetime import datetime
 from threading import Thread
+import time
 
 
 
@@ -31,9 +32,6 @@ class TWAMPDelayMeasurement(Thread):
                 print(packet.show())
                 if(self.SessionSender != None):
                     self.SessionSender.recvTWAMPfromReflector(packet)
-
-            else:
-                print(packet.show())
 
     def run(self):
 
@@ -110,10 +108,9 @@ class Reflector(TWAMPUtils):
                                                         ScaleSender = scaleSender,
                                                         MultiplierSender = multiplierSender
                                                         )
-            pkt = ipv6_packet / udp_packet / twamp_reflector
+            pkt = (ipv6_packet / udp_packet / twamp_reflector)
 
             send(pkt, count=1)
-
 
         def recvTWAMPfromSender(self, packet):
 
@@ -143,10 +140,10 @@ class Sender(TWAMPUtils):
         twampPaylod = twamp.TWAMPTPacketSender(SequenceNumber = self.SequenceNumber, 
                                 FirstPartTimestamp = timestamp[0],
                                 SecondPartTimestamp = timestamp[1],
-                                Scale = scale, 
-                                Multiplier = multiplier)
+                                Scale = self.intToBitField(6,scale), 
+                                Multiplier = self.intToBitField(8,multiplier))
 
-        pkt = ipv6_packet / udp_packet / twampPaylod
+        pkt = (ipv6_packet / udp_packet / twampPaylod)
 
         send(pkt, count=1)
 

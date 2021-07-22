@@ -358,16 +358,16 @@ def simple_test():
     # waiting sender to setup (after several test, we noticed that removing the sleep
     #                           will cause this command to fail)
     print("Waiting the routers to set up... (40 sec)")
-    sleep(40)
+    #sleep(40)
 
     # Step 2. Execute on reflector, twampy cmd
     print("REFLECTOR", reflector.name, "Is sniffing")
-    reflector.cmd("./reflector > received_twamp_packets.txt  &")
+    #reflector.cmd("./reflector > received_twamp_packets.txt  &")
 
 
     print("SENDER", sender.name, "Is sending (scapy crafted) TWAMP packets")
     # Step 4. Execute on sender twampy cmd
-    sender.cmd("./sender > sender_results.txt &")
+    #sender.cmd("./sender > sender_results.txt &")
 
     # -----------------------------
 
