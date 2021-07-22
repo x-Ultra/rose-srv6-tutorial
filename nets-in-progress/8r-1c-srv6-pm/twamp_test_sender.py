@@ -39,7 +39,12 @@ t_dm = twamp_dM.TWAMPDelayMeasurement(sender=sender)
 
 #sender is sniffing for response (?)
 t_dm.start()
+<<<<<<< HEAD
 
+=======
+#print("After thread")
+#time.sleep(2)
+>>>>>>> 54ec95aa5a34b7a6c2b2de07b3e9138d91c4b05d
 sender.sendDelayPacket()
 
 
