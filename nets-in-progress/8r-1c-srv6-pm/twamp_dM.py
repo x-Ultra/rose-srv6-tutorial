@@ -85,6 +85,7 @@ class Reflector(TWAMPUtils):
 
         def receiveDelayPacket(self,scale=0,multiplier=0,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=0):
 
+            timestamp = self.getTimestamp()
 
             ipv6_packet = IPv6()
             ipv6_packet.src = self.srcAddr
@@ -139,14 +140,15 @@ class Sender(TWAMPUtils):
         udp_packet.sport = 1206 
 
         twampPaylod = twamp.TWAMPTPacketSender(SequenceNumber = self.SequenceNumber, 
-                                FirstPartTimestamp = self.intToBitField(32,timestamp[0]),
-                                SecondPartTimestamp = self.intToBitField(32,timestamp[1]),
-                                Scale = self.intToBitField(6,scale), 
-                                Multiplier = self.intToBitField(8,multiplier))
+                                FirstPartTimestamp = self.timestamp[0],
+                                SecondPartTimestamp = self.timestamp[1],
+                                Scale = self.scale, 
+                                Multiplier = self.multiplier)
 
         pkt = ipv6_packet / udp_packet / twampPaylod
 
         send(pkt, count=1)
+
 
 
     def recvTWAMPfromReflector(self, packet):
