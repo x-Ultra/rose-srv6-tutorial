@@ -93,7 +93,8 @@ class Reflector(TWAMPUtils):
 
             udp_packet = UDP()
             udp_packet.dport = 1206 
-            udp_packet.sport = 1205 
+            udp_packet.sport = 1205
+            
 
             twamp_reflector = twamp.TWAMPTPacketReflector(SequenceNumber = self.SequenceNumber, 
                                                         FirstPartTimestamp = timestamp[0],
