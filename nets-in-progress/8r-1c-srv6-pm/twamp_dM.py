@@ -140,10 +140,10 @@ class Sender(TWAMPUtils):
         udp_packet.sport = 1206 
 
         twampPaylod = twamp.TWAMPTPacketSender(SequenceNumber = self.SequenceNumber, 
-                                FirstPartTimestamp = self.timestamp[0],
-                                SecondPartTimestamp = self.timestamp[1],
-                                Scale = self.scale, 
-                                Multiplier = self.multiplier)
+                                FirstPartTimestamp = timestamp[0],
+                                SecondPartTimestamp = timestamp[1],
+                                Scale = scale, 
+                                Multiplier = multiplier)
 
         pkt = ipv6_packet / udp_packet / twampPaylod
 
