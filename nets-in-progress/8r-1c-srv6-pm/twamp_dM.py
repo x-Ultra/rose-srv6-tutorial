@@ -20,12 +20,20 @@ class TWAMPDelayMeasurement(Thread):
         # If a specific interface is used, extract its IPv6 addr
         if(type(interface) == type('string')):
             addrs = netifaces.ifaddresses(interface)
-            addrs[netifaces.AF_INET6][0]['addr']
+            ipv6_addr = addrs[netifaces.AF_INET6][0]['addr']
 
         # If no interface is used, use global IPv6 addr
         else:
             addrs = netifaces.ifaddresses('lo')
-            addrs[netifaces.AF_INET6][0]['addr']
+            ipv6_addr = addrs[netifaces.AF_INET6][0]['addr']
+
+        # setting ipv6 address according to the choosen interface
+        if(self.SessionReflector == None):
+            self.SessionSender.srcAddr = ipv6_addr
+        else:
+            self.SessionReflector.srcAddr = ipv6_addr
+
+        print("Using:", ipv6_addr)
 
 
 
@@ -70,9 +78,10 @@ class TWAMPUtils():
 
 class Reflector(TWAMPUtils):
         
-        def __init__(self,srcAddr):
+        def __init__(self):
               
-                self.srcAddr = srcAddr
+                # set to its superclass constructor
+                self.srcAddr = ''
                 self.senderSequenceNumber = 0
                 self.senderTSint = 0
                 self.senderTSfloat = 0
@@ -121,19 +130,20 @@ class Reflector(TWAMPUtils):
             self.senderTSint = packet[UDP].FirstPartTimestamp
             self.senderTSfloat = packet[UDP].SecondPartTimestamp
 
-            self.sendReflectorDelayPacket(sequence_number,dstAddr)
+            self.sendReflectorDelayPacket(sequence_number=sequence_number,dstAddr=dstAddr)
 
             
 
 
 class Sender(TWAMPUtils):
 
-    def __init__(self, srcAddr, dstAddr):
-        self.srcAddr = srcAddr
+    def __init__(self, dstAddr):
+
+        # set to its superclass constructor
+        self.srcAddr = ''
         self.dstAddr = dstAddr
         self.SequenceNumber = 0
-        self.lastDelayMeasured = 0
-        self.avarageDelayMeasured = 0
+        self.avarageDelayMeasured = 0.0
         self.maxPacketSent = 500
 
     def sendSenderDelayPacket(self,scale=0,multiplier=1):
@@ -163,18 +173,24 @@ class Sender(TWAMPUtils):
 
     def recvTWAMPfromReflector(self, packet):
 
-        packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
+        packet[UDP].decode_payload_as(twamp.TWAMPTPacketReflector)
 
         if ( packet[UDP].SequenceNumber == self.SequenceNumber):
 
-                delay = (packet[UDP].FirstPartTimestampReceiver + packet[UDP].SecondPartTimestampReceiver) - (packet[UDP].FirstPartTimestampSender + packet[UDP].SecondPartTimestampSender)
-          
-                if ( self.maxPacketSent >= self.SequenceNumber):
-                    return
+                delay = (packet[UDP].FirstPartTimestampReceiver + float("0.%d"%packet[UDP].SecondPartTimestampReceiver)) - (packet[UDP].FirstPartTimestampSender + float("0.%d"%packet[UDP].SecondPartTimestampSender))
+                
+                # Welford Online Algorithm for avarage evaluation
+                self.avarageDelayMeasured = float(self.avarageDelayMeasured) + (delay-self.avarageDelayMeasured)/float(self.SequenceNumber+1)
+
+                if ( self.maxPacketSent <= self.SequenceNumber):
+                    return 0
                 else:
                     self.SequenceNumber = packet[UDP].SequenceNumber +1 
-                    sendSenderDelayPacket()
+                    self.sendSenderDelayPacket()
 
         else:
             #pacchetto scartato
-            return 
+            return
+
+    def showPacketDelay(self):
+        print("After sending {} packets, the measured delay is: {} seconds".format(self.maxPacketSent, self.avarageDelayMeasured))
