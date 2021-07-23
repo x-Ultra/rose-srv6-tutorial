@@ -68,7 +68,7 @@ class Reflector(TWAMPUtils):
                 self.senderTSfloat = 0
 
 
-        def sendReflectorDelayPacket(self,scale=0,multiplier=0,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=0):
+        def sendReflectorDelayPacket(self,scale=0,multiplier=1,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=1):
 
             timestamp = self.getTimestamp()
 
@@ -112,8 +112,10 @@ class Sender(TWAMPUtils):
         self.srcAddr = srcAddr
         self.dstAddr = dstAddr
         self.SequenceNumber = 0
+        self.lastDelayMeasured = 0
+        self.avarageDelayMeasured = 0
 
-    def sendSenderDelayPacket(self,scale=0,multiplier=0):
+    def sendSenderDelayPacket(self,scale=0,multiplier=1):
 
         timestamp = self.getTimestamp()
         ipv6_packet = IPv6()
@@ -139,5 +141,16 @@ class Sender(TWAMPUtils):
 
 
     def recvTWAMPfromReflector(self, packet):
+
+
+        # Se seq num è uguale a quello attuale continua,
+        # altrimenti scarta il pacchetto.
+
+        # Incrementa il valore del seq num.
+
+
+        packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
+
+
 
         print("TODO")
