@@ -70,30 +70,28 @@ class TWAMPUtils():
 
 class Reflector(TWAMPUtils):
         
-        def __init__(self,srcAddr,dstAddr):
-
-                self.SequenceNumber = 0
+        def __init__(self,srcAddr):
+              
                 self.srcAddr = srcAddr
-                self.dstAddr = dstAddr
                 self.senderSequenceNumber = 0
                 self.senderTSint = 0
                 self.senderTSfloat = 0
 
 
-        def sendReflectorDelayPacket(self,scale=0,multiplier=1,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=1):
+        def sendReflectorDelayPacket(self,dstAddr,sequence_number,scale=0,multiplier=1,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=1):
 
             timestamp = self.getTimestamp()
 
             ipv6_packet = IPv6()
             ipv6_packet.src = self.srcAddr
-            ipv6_packet.dst = self.dstAddr
+            ipv6_packet.dst = dstAddr
 
             udp_packet = UDP()
             udp_packet.dport = 1206 
             udp_packet.sport = 1205
             
 
-            twamp_reflector = twamp.TWAMPTPacketReflector(SequenceNumber = self.SequenceNumber, 
+            twamp_reflector = twamp.TWAMPTPacketReflector(SequenceNumber = sequence_number, 
                                                         FirstPartTimestamp = timestamp[0],
                                                         SecondPartTimestamp = timestamp[1],
                                                         Scale = scale,
@@ -114,16 +112,16 @@ class Reflector(TWAMPUtils):
         def recvTWAMPfromSender(self, packet):
 
             self.srcAddr = packet[IPv6].dst
-            self.dstAddr = packet[IPv6].src
+            dstAddr = packet[IPv6].src
 
             packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
 
-            self.SequenceNumber = packet[UDP].SequenceNumberSender
-            self.senderSequenceNumber = packet[UDP].SequenceNumberSender
-            self.senderTSint = packet[UDP].FirstPartTimestampSender
-            self.senderTSfloat = packet[UDP].SecondPartTimestampSender
+            sequence_number = packet[UDP].SequenceNumber
+            self.senderSequenceNumber = packet[UDP].SequenceNumber
+            self.senderTSint = packet[UDP].FirstPartTimestamp
+            self.senderTSfloat = packet[UDP].SecondPartTimestamp
 
-            self.sendReflectorDelayPacket()
+            self.sendReflectorDelayPacket(sequence_number,dstAddr)
 
             
 
@@ -136,6 +134,7 @@ class Sender(TWAMPUtils):
         self.SequenceNumber = 0
         self.lastDelayMeasured = 0
         self.avarageDelayMeasured = 0
+        self.maxPacketSent = 500
 
     def sendSenderDelayPacket(self,scale=0,multiplier=1):
 
@@ -158,21 +157,24 @@ class Sender(TWAMPUtils):
 
         pkt = (ipv6_packet / udp_packet / twampPaylod)
 
-        send(pkt, count=5)
+        send(pkt, count=1)
 
 
 
     def recvTWAMPfromReflector(self, packet):
 
-
-        # Se seq num è uguale a quello attuale continua,
-        # altrimenti scarta il pacchetto.
-
-        # Incrementa il valore del seq num.
-
-
         packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
 
+        if ( packet[UDP].SequenceNumber == self.SequenceNumber):
 
+                delay = (packet[UDP].FirstPartTimestampReceiver + packet[UDP].SecondPartTimestampReceiver) - (packet[UDP].FirstPartTimestampSender + packet[UDP].SecondPartTimestampSender)
+          
+                if ( self.maxPacketSent >= self.SequenceNumber):
+                    return
+                else:
+                    self.SequenceNumber = packet[UDP].SequenceNumber +1 
+                    sendSenderDelayPacket()
 
-        print("TODO")
+        else:
+            #pacchetto scartato
+            return 

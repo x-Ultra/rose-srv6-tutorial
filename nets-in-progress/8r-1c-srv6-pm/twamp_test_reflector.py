@@ -32,7 +32,7 @@ reflector_file = open("IPv6-Reflector", "r")
 source_addr = sender_file.readline().split('\n')[0]
 dst_addr = reflector_file.readline().split('\n')[0]
 
-reflector = twamp_dM.Reflector(source_addr, dst_addr)
+reflector = twamp_dM.Reflector(source_addr)
 t_dm = twamp_dM.TWAMPDelayMeasurement(reflector=reflector)
 
 #sender is sniffing for response (?)
