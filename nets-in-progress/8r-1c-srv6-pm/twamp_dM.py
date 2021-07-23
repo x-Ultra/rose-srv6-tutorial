@@ -19,7 +19,7 @@ class TWAMPDelayMeasurement(Thread):
 
     def packetRecvCallback(self, packet):
 
-        #TODO passate dal controller per connessione!!!
+        
         if UDP in packet:
             if packet[UDP].dport==1205:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
@@ -101,9 +101,19 @@ class Reflector(TWAMPUtils):
 
         def recvTWAMPfromSender(self, packet):
 
+            self.srcAddr = packet[IPv6].dst
+            self.dstAddr = packet[IPv6].src
+
+            packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
+
+            self.SequenceNumber = packet[UDP].SequenceNumberSender
+            self.senderSequenceNumber = packet[UDP].SequenceNumberSender
+            self.senderTSint = packet[UDP].FirstPartTimestampSender
+            self.senderTSfloat = packet[UDP].SecondPartTimestampSender
+
             self.sendReflectorDelayPacket()
 
-            print("TODO")
+            
 
 
 class Sender(TWAMPUtils):
@@ -136,7 +146,7 @@ class Sender(TWAMPUtils):
 
         pkt = (ipv6_packet / udp_packet / twampPaylod)
 
-        send(pkt, count=1)
+        send(pkt, count=5)
 
 
 

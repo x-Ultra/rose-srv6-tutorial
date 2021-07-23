@@ -51,7 +51,7 @@ class TWAMPTPacketSender(Packet):
                                              1: "external synchronization"}),
                     BitField("Z",0,1),
                     BitField("Scale",0,6),
-                    BitField("Multiplier",0,8)] #manca il padding
+                    BitField("Multiplier",1,8)] #manca il padding
 
 
 class TWAMPTPacketReflector(Packet):
@@ -63,7 +63,7 @@ class TWAMPTPacketReflector(Packet):
                                              1: "external synchronization"}),
                     BitField("Z",0,1),
                     BitField("Scale",0,6),
-                    BitField("Multiplier",0,8),
+                    BitField("Multiplier",1,8),
                     BitField("MBZ",0,16),
                     BitField("FirstPartTimestampReceiver",0,32),
                     BitField("SecondPartTimestampReceiver",0,32),
@@ -74,6 +74,6 @@ class TWAMPTPacketReflector(Packet):
                                              1: "external synchronization"}),
                     BitField("ZSender ",0,1),
                     BitField("ScaleSender",0,6),
-                    BitField("MultiplierSender",0,8),
+                    BitField("MultiplierSender",1,8),
                     BitField("MBZ",0,16),
                     ByteField("SenderTTL",255)] #manca il padding
