@@ -46,7 +46,7 @@ class TWAMPDelayMeasurement(Thread):
             if packet[UDP].dport==20001:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
 
-               #print(packet.show())
+                print(packet.show())
                 if(self.SessionReflector != None):
                     self.SessionReflector.recvTWAMPfromSender(packet)
 
@@ -54,7 +54,7 @@ class TWAMPDelayMeasurement(Thread):
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketReflector)
 
  
-                #print(packet.show())
+                print(packet.show())
 
                 if(self.SessionSender != None):
                     self.SessionSender.recvTWAMPfromReflector(packet)
@@ -74,6 +74,7 @@ class TWAMPUtils():
     def getTimestamp(self):
 
         t = datetime.timestamp(datetime.now()) + int(2208988800)
+        
 
         intTimestamp = int(t)
         floatTimestamp = int(str(t).split(".")[1])
