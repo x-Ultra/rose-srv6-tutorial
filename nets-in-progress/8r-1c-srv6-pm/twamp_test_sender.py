@@ -7,12 +7,6 @@ import twamp
 import twamp_dM
 import time
 
-sender_file = open("IPv6-Sender", "r")
-reflector_file = open("IPv6-Reflector", "r")
-
-source_addr = sender_file.readline().split('\n')[0]
-dst_addr = reflector_file.readline().split('\n')[0]
-
 """
 i=IPv6() 
 i.src = source_addr
@@ -34,6 +28,12 @@ pkt=(i/q/t)
 send(pkt,count=50)
 """
 
+sender_file = open("IPv6-Sender", "r")
+reflector_file = open("IPv6-Reflector", "r")
+
+source_addr = sender_file.readline().split('\n')[0]
+dst_addr = reflector_file.readline().split('\n')[0]
+
 sender = twamp_dM.Sender(source_addr, dst_addr)
 t_dm = twamp_dM.TWAMPDelayMeasurement(sender=sender)
 
@@ -41,4 +41,4 @@ t_dm = twamp_dM.TWAMPDelayMeasurement(sender=sender)
 t_dm.start()
 
 time.sleep(2)
-sender.sendDelayPacket()
+sender.sendSenderDelayPacket()
