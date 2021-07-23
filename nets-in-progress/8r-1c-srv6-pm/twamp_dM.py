@@ -101,6 +101,8 @@ class Reflector(TWAMPUtils):
 
         def recvTWAMPfromSender(self, packet):
 
+            self.sendReflectorDelayPacket()
+
             print("TODO")
 
 
