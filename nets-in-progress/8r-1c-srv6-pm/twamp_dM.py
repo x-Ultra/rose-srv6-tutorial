@@ -41,13 +41,13 @@ class TWAMPDelayMeasurement(Thread):
 
         
         if UDP in packet:
-            if packet[UDP].dport==1205:
+            if packet[UDP].dport==20001:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
                 print(packet.show())
                 if(self.SessionReflector != None):
                     self.SessionReflector.recvTWAMPfromSender(packet)
 
-            elif packet[UDP].dport==1206:
+            elif packet[UDP].dport==20000:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketReflector)
                 print(packet.show())
                 if(self.SessionSender != None):
