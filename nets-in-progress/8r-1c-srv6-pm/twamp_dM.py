@@ -96,8 +96,8 @@ class Reflector(TWAMPUtils):
             ipv6_packet.dst = dstAddr
 
             udp_packet = UDP()
-            udp_packet.dport = 1206 
-            udp_packet.sport = 1205
+            udp_packet.dport = 20000 
+            udp_packet.sport = 20001
             
 
             twamp_reflector = twamp.TWAMPTPacketReflector(SequenceNumber = sequence_number, 
@@ -156,8 +156,8 @@ class Sender(TWAMPUtils):
         #TODO parte Srv6 qui
 
         udp_packet = UDP()
-        udp_packet.dport = 1205 
-        udp_packet.sport = 1206 
+        udp_packet.dport = 20001 
+        udp_packet.sport = 20000 
 
         twampPaylod = twamp.TWAMPTPacketSender(SequenceNumber = self.SequenceNumber, 
                                 FirstPartTimestamp = timestamp[0],
@@ -183,7 +183,8 @@ class Sender(TWAMPUtils):
                 self.avarageDelayMeasured = float(self.avarageDelayMeasured) + (delay-self.avarageDelayMeasured)/float(self.SequenceNumber+1)
 
                 if ( self.maxPacketSent <= self.SequenceNumber):
-                    return 0
+                    self.showPacketDelay()
+                    return 
                 else:
                     self.SequenceNumber = packet[UDP].SequenceNumber +1 
                     self.sendSenderDelayPacket()
