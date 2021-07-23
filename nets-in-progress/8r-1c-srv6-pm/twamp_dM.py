@@ -6,6 +6,11 @@ from datetime import datetime
 from threading import Thread
 import time
 import netifaces
+import struct
+
+# Constants to convert between python timestamps and NTP 8B binary format [RFC1305]
+TIMEOFFSET = int(2208988800)    # Time Difference: 1-JAN-1900 to 1-JAN-1970
+ALLBITS = int(0xFFFFFFFF)       # To calculate 32bit fraction of the second
 
 
 class TWAMPDelayMeasurement(Thread):
@@ -67,12 +72,12 @@ class TWAMPUtils():
 
     def getTimestamp(self):
 
-        t = datetime.timestamp(datetime.now())
+        t = datetime.timestamp(datetime.now()) - datetime.timestamp(datetime(1900,1,1,1))
 
         intTimestamp = int(t)
         floatTimestamp = int(str(t).split(".")[1])
 
-        return (intTimestamp,floatTimestamp)
+        return (intTimestamp, floatTimestamp)
 
 
 
