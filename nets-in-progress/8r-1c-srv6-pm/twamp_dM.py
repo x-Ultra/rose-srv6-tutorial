@@ -5,7 +5,7 @@ import twamp
 from datetime import datetime
 from threading import Thread
 import time
-
+import netifaces
 
 
 class TWAMPDelayMeasurement(Thread):
@@ -16,6 +16,18 @@ class TWAMPDelayMeasurement(Thread):
         self.interface = interface
         self.SessionSender = sender
         self.SessionReflector = reflector
+        
+        # If a specific interface is used, extract its IPv6 addr
+        if(type(interface) == type('string')):
+            addrs = netifaces.ifaddresses(interface)
+            addrs[netifaces.AF_INET6][0]['addr']
+
+        # If no interface is used, use global IPv6 addr
+        else:
+            addrs = netifaces.ifaddresses('lo')
+            addrs[netifaces.AF_INET6][0]['addr']
+
+
 
     def packetRecvCallback(self, packet):
 
