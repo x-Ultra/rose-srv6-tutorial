@@ -19,6 +19,3 @@ t_dm.start()
 
 time.sleep(2)
 sender.sendSenderDelayPacket()
-print("ok")
-sender.showPacketDelay()
-print(sender.avarageDelayMeasured)
