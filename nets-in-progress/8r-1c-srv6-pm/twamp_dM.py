@@ -39,8 +39,6 @@ class TWAMPDelayMeasurement(Thread):
         else:
             self.SessionReflector.srcAddr = ipv6_addr
 
-        print("Using:", ipv6_addr)
-
 
 
     def packetRecvCallback(self, packet):
@@ -68,6 +66,7 @@ class TWAMPDelayMeasurement(Thread):
         print("TestPacketReceiver Start sniffing...")
         sniff(iface=self.interface, filter="ip6", prn=self.packetRecvCallback)
         print("TestPacketReceiver Stop sniffing")
+
 
 
 class TWAMPUtils():
@@ -98,6 +97,10 @@ class Reflector(TWAMPUtils):
                 self.senderTSfloat = 0
 
 
+        """
+            This method is used upon receiving a packet from a sender.
+            The method send a reply to the sender according to TWAMP standard
+        """
         def sendReflectorDelayPacket(self,dstAddr,sequence_number,scale=0,multiplier=1,mBZ=0,SSender=0,ZSender=0,scaleSender=0,multiplierSender=1):
 
             timestamp = self.getTimestamp()
@@ -130,7 +133,10 @@ class Reflector(TWAMPUtils):
             send(pkt, count=1, verbose=0)
 
 
-        
+        """
+            Methods triggered when received a packet from (TWAMP) sender.
+            This method extract the needed field to be used to craft the corresponding reply.
+        """        
         def recvTWAMPfromSender(self, packet):
 
             self.srcAddr = packet[IPv6].dst
@@ -159,6 +165,7 @@ class Sender(TWAMPUtils):
         self.avarageDelayMeasured = 0.0
         self.maxPacketSent = 500
 
+
     def sendSenderDelayPacket(self,scale=0,multiplier=1):
 
         timestamp = self.getTimestamp()
@@ -183,7 +190,11 @@ class Sender(TWAMPUtils):
         send(pkt, count=1, verbose=0)
 
 
-
+    """
+        Method triggered on receiving a reply from the reflector. 
+        This method extracts the fields of the packet received from the reflector
+        in order to evaluate the avatage delay.
+    """
     def recvTWAMPfromReflector(self, packet):
 
         packet[UDP].decode_payload_as(twamp.TWAMPTPacketReflector)
@@ -206,5 +217,6 @@ class Sender(TWAMPUtils):
             #pacchetto scartato
             return
 
+    # Method called automatically when the time delay measurement has finished
     def showPacketDelay(self):
         print("After sending {} packets, the measured delay is: {} seconds".format(self.maxPacketSent, self.avarageDelayMeasured))

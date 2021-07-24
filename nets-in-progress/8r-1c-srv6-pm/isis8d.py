@@ -342,6 +342,11 @@ def simple_test():
     if ADD_ETC_HOSTS:
         add_nodes_to_etc_hosts()
 
+    # This waiting time is needed because after several tests we noticed that
+    # it is needed some time to let each node of the topology to be set up correctly
+    print("Waiting the components of the topology to set up correctly (40 seconds)")
+    sleep(40)
+
     CLI(net)
 
     # Remove Mininet nodes from /etc/hosts
