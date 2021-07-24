@@ -49,27 +49,17 @@ class TWAMPDelayMeasurement(Thread):
         if UDP in packet:
             if packet[UDP].dport==20001:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
-<<<<<<< HEAD
 
-                print(packet.show())
-=======
-                #print(packet.show())
->>>>>>> f1a9dbf7e8d02d6c3c9b1f1ee4814c90c33cfc90
+             #   print(packet.show())
+
                 if(self.SessionReflector != None):
                     self.SessionReflector.recvTWAMPfromSender(packet)
 
             elif packet[UDP].dport==20000:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketReflector)
-<<<<<<< HEAD
-
-
  
-                print(packet.show())
+             #   print(packet.show())
 
-
-=======
-                #print(packet.show())
->>>>>>> f1a9dbf7e8d02d6c3c9b1f1ee4814c90c33cfc90
                 if(self.SessionSender != None):
                     self.SessionSender.recvTWAMPfromReflector(packet)
 
@@ -90,7 +80,6 @@ class TWAMPUtils():
         t = datetime.timestamp(datetime.now()) + TIMEOFFSET
 
         floatTimestamp = int((t - int(t)) * ALLBITS)  # 32bit fraction of the second
-
 
         intTimestamp = int(t)
 
@@ -140,6 +129,8 @@ class Reflector(TWAMPUtils):
 
             send(pkt, count=1, verbose=0)
 
+
+        
         def recvTWAMPfromSender(self, packet):
 
             self.srcAddr = packet[IPv6].dst
