@@ -47,13 +47,6 @@ if NODE_MANAGER_PATH is not None:
 # Get gRPC server port
 NODE_MANAGER_GRPC_PORT = os.getenv('NODE_MANAGER_GRPC_PORT', None)
 
-# Castagnacci-Ditella Progetto
-
-# GLobal Variables
-choosed_sender = ''
-choosed_reflector = ''
-
-# -----------------------------
 
 
 class BaseNode(Host):
@@ -349,30 +342,7 @@ def simple_test():
     if ADD_ETC_HOSTS:
         add_nodes_to_etc_hosts()
 
-    # Castagnacci-Ditella Progetto
-    
-    # Step 1. Recuperare sender & Reflector scelti dell'utente
-    sender = net.get(choosed_sender)
-    reflector = net.get(choosed_reflector)
-
-    # waiting sender to setup (after several test, we noticed that removing the sleep
-    #                           will cause this command to fail)
-    print("Waiting the routers to set up... (40 sec)")
-    #sleep(20)
-
-    # Step 2. Execute on reflector, twampy cmd
-    print("REFLECTOR", reflector.name, "Is sniffing")
-    #reflector.cmd("./reflector &")
-    #sleep(2)
-
-    print("SENDER", sender.name, "Is sending (scapy crafted) TWAMP packets")
-    # Step 4. Execute on sender twampy cmd
-    #sender.cmd("./sender > sender_results.txt &")
-
-    # -----------------------------
     CLI(net)
-
-    
 
     # Remove Mininet nodes from /etc/hosts
     if ADD_ETC_HOSTS:
@@ -410,29 +380,6 @@ def __main():
     global NODE_MANAGER_GRPC_PORT  # pylint: disable=global-statement
     global net
     global choosed_sender, choosed_reflector
-
-    # Castagnacci-Ditella Progetto
-    possible_routers = ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8"]
-    sender_choosed = False
-    reflector_chosed = False
-    while not sender_choosed or not reflector_chosed:
-        print("Here are the routers in the current mininet topology:")
-        print("r1\nr2\nr3\nr4\nr5\nr6\nr7\nr8")
-        print("Please choose a Sender and Receiver to be used for Delay Measurement (TWAMP)")
-        if not sender_choosed:
-            choosed_sender = input("Choose the Router 'Sender': ")
-            if choosed_sender in possible_routers:
-                sender_choosed = True
-        if not reflector_chosed:
-            choosed_reflector = input("Choose the Router 'Reflector': ")
-            if choosed_reflector in possible_routers:
-                reflector_chosed = True
-        os.system("clear")
-        if not sender_choosed:
-            print("!! Wrong choice for sender !!")
-        if not reflector_chosed:
-            print("!! Wrong choice for reflector !!")
-    # -----------------------------
 
     # Parse command-line arguments
     args = parse_arguments()

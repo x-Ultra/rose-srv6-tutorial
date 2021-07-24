@@ -11,5 +11,5 @@ import twamp_dM
 reflector = twamp_dM.Reflector()
 t_dm = twamp_dM.TWAMPDelayMeasurement(reflector=reflector)
 
-#sender is sniffing for response (?)
+
 t_dm.start()
