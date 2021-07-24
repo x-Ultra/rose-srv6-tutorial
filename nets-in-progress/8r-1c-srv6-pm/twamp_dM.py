@@ -49,19 +49,27 @@ class TWAMPDelayMeasurement(Thread):
         if UDP in packet:
             if packet[UDP].dport==20001:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketSender)
+<<<<<<< HEAD
 
                 print(packet.show())
+=======
+                #print(packet.show())
+>>>>>>> f1a9dbf7e8d02d6c3c9b1f1ee4814c90c33cfc90
                 if(self.SessionReflector != None):
                     self.SessionReflector.recvTWAMPfromSender(packet)
 
             elif packet[UDP].dport==20000:
                 packet[UDP].decode_payload_as(twamp.TWAMPTPacketReflector)
+<<<<<<< HEAD
 
 
  
                 print(packet.show())
 
 
+=======
+                #print(packet.show())
+>>>>>>> f1a9dbf7e8d02d6c3c9b1f1ee4814c90c33cfc90
                 if(self.SessionSender != None):
                     self.SessionSender.recvTWAMPfromReflector(packet)
 
